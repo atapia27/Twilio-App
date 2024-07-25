@@ -16,28 +16,29 @@ const VideoCall: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log("Token:", token);
     if (token && !localTrack) {
       createLocalVideoTrack().then((track) => {
         setLocalTrack(track);
         handleTrackSubscribed(track);
-
+  
         if (!room) {
           connect(token, { name: 'room' }).then((connectedRoom: Room) => {
             setRoom(connectedRoom);
-
+  
             connectedRoom.localParticipant.tracks.forEach((publication) => {
               if (publication.track && publication.track.kind === 'video') {
                 handleTrackSubscribed(publication.track as LocalVideoTrack);
               }
             });
-
+  
             connectedRoom.on('participantConnected', (participant) => {
               participant.tracks.forEach((publication: RemoteTrackPublication) => {
                 if (publication.isSubscribed && publication.track && publication.track.kind === 'video') {
                   handleTrackSubscribed(publication.track as RemoteVideoTrack);
                 }
               });
-
+  
               participant.on('trackSubscribed', (track) => {
                 if (track.kind === 'video') {
                   handleTrackSubscribed(track as RemoteVideoTrack);
@@ -52,14 +53,12 @@ const VideoCall: React.FC = () => {
         console.error('Error creating local video track:', error);
       });
     }
-
+  
     return () => {
-      // Clean up the local video track when the component unmounts
       if (localTrack) {
         localTrack.stop();
         localTrack.detach().forEach(element => element.remove());
       }
-      // Disconnect from the room when the component unmounts
       if (room) {
         room.disconnect();
       }
