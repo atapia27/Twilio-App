@@ -1,14 +1,28 @@
-// frontend/src/pages/index.tsx
-
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useStore } from '../store/useStore';
 import VideoCall from '../components/VideoCall';
+import { v4 as uuidv4 } from 'uuid';
 
 const Home: React.FC = () => {
   const { setToken, token } = useStore();
-  const [identity, setIdentity] = useState('');
+  const [identity, setIdentity] = useState<string>('');
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Check if identity is already stored in local storage
+      const storedIdentity = localStorage.getItem('identity');
+      setIdentity(storedIdentity ?? uuidv4());
+    }
+  }, []);
+
+  useEffect(() => {
+    if (identity) {
+      // Store the identity in local storage
+      localStorage.setItem('identity', identity);
+    }
+  }, [identity]);
 
   useEffect(() => {
     if (submitted && identity) {
